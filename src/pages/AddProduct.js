@@ -38,7 +38,7 @@ const AddProduct = () => {
         <p className="mx-2">Add new Product</p>
       </div>
 
-      <div className="w-full mt-8 grid gap-4 grid-col md:grid-cols-3 ">
+     <div className="w-full mt-8 grid gap-4 grid-col md:grid-cols-3 ">
         <Card className="row-span-2 md:col-span-2">
           <CardBody>
             <FormTitle>Product Image</FormTitle>

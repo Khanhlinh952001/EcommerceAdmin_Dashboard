@@ -28,6 +28,10 @@ const routes = [
         path: "/app/add-product",
         name: "Add Product",
       },
+      {
+        path: "/app/create-product",
+        name: "Create Product",
+      },
     ],
   },
   {

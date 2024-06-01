@@ -9,7 +9,7 @@ export const SidebarProvider = ({ children }) => {
   function toggleSidebar() {
     setIsSidebarOpen(!isSidebarOpen);
   }
-
+ 
   function closeSidebar() {
     setIsSidebarOpen(false);
   }

@@ -8,7 +8,6 @@ import {
   TableRow,
   TableFooter,
   Avatar,
-  Badge,
   Pagination,
 } from "@windmill/react-ui";
 import response from "../utils/demo/usersData";

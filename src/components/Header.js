@@ -18,9 +18,7 @@ import {
   DropdownItem,
   WindmillContext,
 } from "@windmill/react-ui";
-import { Link } from "react-router-dom";
-import response from "../utils/demo/profileData";
-
+import { seller } from "../data";
 function Header() {
   const { mode, toggleMode } = useContext(WindmillContext);
   const { toggleSidebar } = useContext(SidebarContext);
@@ -127,8 +125,8 @@ function Header() {
             >
               <Avatar
                 className="align-middle"
-                src={response.avatar}
-                alt=""
+                src={seller.personalInfo.photo}
+                alt="dsd"
                 aria-hidden="true"
               />
             </button>

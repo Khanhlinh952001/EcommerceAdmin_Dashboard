@@ -186,3 +186,31 @@ export const genRating = (rating, reviewsCount, iconSize) => {
     );
   }
 };
+
+export const calculateProductStats = (reviews) => {
+  const productStats = {};
+  
+  reviews.forEach((review) => {
+    const { product_id, rating } = review;
+    
+    if (!productStats[product_id]) {
+      productStats[product_id] = { totalRating: 0, totalComments: 0, reviewCount: 0 };
+    }
+    
+    productStats[product_id].totalRating += rating;
+    productStats[product_id].totalComments += 1;
+    productStats[product_id].reviewCount += 1;
+  });
+  
+  Object.keys(productStats).forEach((productId) => {
+    const averageRating = productStats[productId].totalRating / productStats[productId].reviewCount;
+    productStats[productId].averageRating = averageRating.toFixed(1);
+  });
+  
+  return productStats;
+};
+
+
+
+
+

@@ -1,6 +1,6 @@
 import { lazy } from "react";
 
-// use lazy for better code splitting, a.k.a. load faster
+// Use lazy for better code splitting, a.k.a. load faster
 const Dashboard = lazy(() => import("../pages/Dashboard"));
 const Orders = lazy(() => import("../pages/Orders"));
 const ProductsAll = lazy(() => import("../pages/ProductsAll"));
@@ -12,6 +12,9 @@ const Profile = lazy(() => import("../pages/Profile"));
 const Settings = lazy(() => import("../pages/Settings"));
 const Page404 = lazy(() => import("../pages/404"));
 const Blank = lazy(() => import("../pages/Blank"));
+const CreateProduct = lazy(() => import("../pages/CreateProducts"));
+const OrderDetail = lazy(() => import("../pages/OrderDetail"));
+const EditProduct = lazy(() => import("../pages/EditProduct"));
 
 /**
  * ⚠ These are internal routes!
@@ -33,6 +36,10 @@ const routes = [
     component: Orders,
   },
   {
+    path: "/order-detail/:id",
+    component: OrderDetail,
+  },
+  {
     path: "/all-products",
     component: ProductsAll,
   },
@@ -41,8 +48,16 @@ const routes = [
     component: AddProduct,
   },
   {
+    path: "/create-product",
+    component: CreateProduct,
+  },
+  {
     path: "/product/:id",
     component: SingleProduct,
+  },
+  {
+    path: "/edit/:id",
+    component: EditProduct,
   },
   {
     path: "/customers",

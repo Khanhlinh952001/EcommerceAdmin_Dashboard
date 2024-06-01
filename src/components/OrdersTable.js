@@ -7,126 +7,161 @@ import {
   TableCell,
   TableRow,
   TableFooter,
-  Avatar,
   Badge,
   Pagination,
+  Card,
+  CardBody,
+  Button,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
 } from "@windmill/react-ui";
-import response from "../utils/demo/ordersData";
+import { NavLink } from "react-router-dom";
+import { orders, products } from "../data"; // Make sure this file path is correct
+import { EditIcon, TrashIcon, EyeIcon } from "../icons"; // Ensure these icons are imported correctly
 
-const OrdersTable = ({ resultsPerPage, filter }) => {
+const OrdersTable = ({ filter }) => {
   const [page, setPage] = useState(1);
   const [data, setData] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedDeleteOrder, setSelectedDeleteOrder] = useState(null);
+  const resultsPerPage = 5; // Display 5 orders per page
+  const totalResults = orders.length;
 
-  // pagination setup
-  const totalResults = response.length;
-
-  // pagination change control
-  function onPageChange(p) {
-    setPage(p);
-  }
-
-  // on page change, load new sliced data
-  // here you would make another server request for new data
   useEffect(() => {
-    // If Filters Applied
+    let filteredOrders = orders;
+
+    // Apply Filters
     if (filter === "paid") {
-      setData(
-        response
-          .filter((order) => order.status === "Paid")
-          .slice((page - 1) * resultsPerPage, page * resultsPerPage)
-      );
-    }
-    if (filter === "un-paid") {
-      setData(
-        response
-          .filter((order) => order.status === "Un-paid")
-          .slice((page - 1) * resultsPerPage, page * resultsPerPage)
-      );
-    }
-    if (filter === "completed") {
-      setData(
-        response
-          .filter((order) => order.status === "Completed")
-          .slice((page - 1) * resultsPerPage, page * resultsPerPage)
-      );
+      filteredOrders = orders.filter((order) => order.status === "Paid");
+    } else if (filter === "un-paid") {
+      filteredOrders = orders.filter((order) => order.status === "Un-paid");
+    } else if (filter === "completed") {
+      filteredOrders = orders.filter((order) => order.status === "Completed");
     }
 
-    // if filters dosent applied
-    if (filter === "all" || !filter) {
-      setData(
-        response.slice((page - 1) * resultsPerPage, page * resultsPerPage)
-      );
-    }
-  }, [page, resultsPerPage, filter]);
+    setData(filteredOrders.slice((page - 1) * resultsPerPage, page * resultsPerPage));
+  }, [page, filter]);
+
+  const onPageChange = (p) => setPage(p);
+
+  const openModal = (orderId) => {
+    const order = data.find((order) => order.id === orderId);
+    setSelectedDeleteOrder(order);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => setIsModalOpen(false);
 
   return (
     <div>
-      {/* Table */}
-      <TableContainer className="mb-8">
-        <Table>
-          <TableHeader>
-            <tr>
-              <TableCell>Client</TableCell>
-              <TableCell>Order ID</TableCell>
-              <TableCell>Amount</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Date</TableCell>
-            </tr>
-          </TableHeader>
-          <TableBody>
-            {data.map((user, i) => (
-              <TableRow key={i}>
-                <TableCell>
-                  <div className="flex items-center text-sm">
-                    <Avatar
-                      className="hidden mr-3 md:block"
-                      src={user.avatar}
-                      alt="User image"
-                    />
-                    <div>
-                      <p className="font-semibold">{user.name}</p>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <span className="text-sm">#000{i}</span>
-                </TableCell>
-                <TableCell>
-                  <span className="text-sm">$ {user.amount}</span>
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    type={
-                      user.status === "Un-paid"
-                        ? "danger"
-                        : user.status === "Paid"
-                        ? "success"
-                        : user.status === "Completed"
-                        ? "warning"
-                        : "neutral"
-                    }
-                  >
-                    {user.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <span className="text-sm">
-                    {new Date(user.date).toLocaleDateString()}
-                  </span>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        <TableFooter>
-          <Pagination
-            totalResults={totalResults}
-            resultsPerPage={resultsPerPage}
-            label="Table navigation"
-            onChange={onPageChange}
-          />
-        </TableFooter>
-      </TableContainer>
+      <Card>
+        <CardBody>
+          <TableContainer>
+            <Table>
+              <TableHeader>
+                <tr>
+                <TableCell>ID</TableCell>
+                  <TableCell>Order ID</TableCell>
+                  <TableCell>Customer Name</TableCell>
+                  <TableCell>Date</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Total Amount</TableCell>
+                  <TableCell>Products</TableCell>
+                  <TableCell>Action</TableCell>
+                </tr>
+              </TableHeader>
+              <TableBody>
+                {data.map((order,index) => (
+                  <TableRow key={order.id}>
+                    <TableCell>
+                      <span className="text-sm">{index+1}</span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm">{order.id}</span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm">{order.shippingAddress}</span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm">{new Date(order.date).toLocaleDateString()}</span>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        type={
+                          order.status === "Un-paid"
+                            ? "danger"
+                            : order.status === "Paid"
+                              ? "success"
+                              : order.status === "Completed"
+                                ? "warning"
+                                : "neutral"
+                        }
+                      >
+                        {order.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm">${order.totalAmount}</span>
+                    </TableCell>
+                    <TableCell>
+                      <ul className="text-sm">
+                        {order.products.map((product) => {
+                          const productDetail = products.find((p) => p.id === product.productId);
+                          const totalPrice = productDetail.price * product.qty;
+                          return (
+                            <li key={product.productId} className="flex">
+                               <img src={productDetail.photo} alt={productDetail.name} className="h-10 w-10 p-1"/> <p className="ml-2 text-md font-bold">(x{product.qty}) - ${totalPrice}</p> 
+                            </li>
+                          );
+                        })}
+
+                      </ul>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <NavLink to={`/app/order-detail/${order.id}`}>
+                          <Button icon={EyeIcon} layout="link" aria-label="View" />
+                        </NavLink>
+                        <Button icon={EditIcon} layout="link" aria-label="Edit" />
+                        <Button
+                          icon={TrashIcon}
+                          layout="link"
+                          aria-label="Delete"
+                          onClick={() => openModal(order.id)}
+                        />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <TableFooter>
+              <Pagination
+                totalResults={totalResults}
+                resultsPerPage={resultsPerPage}
+                label="Table navigation"
+                onChange={onPageChange}
+              />
+            </TableFooter>
+          </TableContainer>
+        </CardBody>
+      </Card>
+
+      <Modal isOpen={isModalOpen} onClose={closeModal}>
+        <ModalHeader>Delete Order</ModalHeader>
+        <ModalBody>
+          Are you sure you want to delete order{' '}
+          {selectedDeleteOrder && selectedDeleteOrder.id}?
+        </ModalBody>
+        <ModalFooter>
+          <Button layout="outline" onClick={closeModal}>
+            Cancel
+          </Button>
+          <Button>Delete</Button>
+        </ModalFooter>
+      </Modal>
     </div>
   );
 };

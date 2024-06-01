@@ -56,8 +56,11 @@ const Chats = () => {
                   handleClick={() => handleSelect(user)}
                 />
               );
+            } else {
+              return null; // Thêm trường hợp trả về khi không thỏa mãn điều kiện
             }
           })}
+
         </div>
       </div>
     </div>

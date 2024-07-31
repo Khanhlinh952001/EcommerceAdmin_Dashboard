@@ -118,7 +118,7 @@ function Header() {
           {/* <!-- Profile menu --> */}
           <li className="relative">
             <button
-              className="rounded-full focus:shadow-outline-purple focus:outline-none"
+              className="rounded-full focus:shadow-outline-purple focus:outline-none flex px-2 py-1"
               onClick={handleProfileClick}
               aria-label="Account"
               aria-haspopup="true"
@@ -128,7 +128,8 @@ function Header() {
                 src={seller.personalInfo.photo}
                 alt="dsd"
                 aria-hidden="true"
-              />
+              /> 
+              <p className="mt-1 ml-1 text-md font-semibold">{seller.personalInfo.lastName}</p>
             </button>
             <Dropdown
               align="right"

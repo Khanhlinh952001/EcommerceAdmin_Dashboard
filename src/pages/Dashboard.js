@@ -1,13 +1,13 @@
 import React from "react";
-
 import InfoCard from "../components/Cards/InfoCard";
 import ChartCard from "../components/Chart/ChartCard";
 import { Doughnut, Line } from "react-chartjs-2";
 import ChartLegend from "../components/Chart/ChartLegend";
 import PageTitle from "../components/Typography/PageTitle";
 import { ChatIcon, CartIcon, MoneyIcon, PeopleIcon } from "../icons";
+import { Link } from "react-router-dom";
 import RoundIcon from "../components/RoundIcon";
-
+import { orders, products, seller, reviews, customers } from '../data';
 import {
   doughnutOptions,
   lineOptions,
@@ -17,6 +17,33 @@ import {
 import OrdersTable from "../components/OrdersTable";
 
 function Dashboard() {
+
+  // Tính tổng số tiền mà seller đã bán
+  const sellerProductIds = seller.productIds;
+  let totalSales = 0;
+  let totalOrders = 0;
+
+  orders.forEach(order => {
+    order.products.forEach(product => {
+      if (sellerProductIds.includes(product.productId)) {
+        const productPrice = products.find(p => p.id === product.productId).price;
+        totalSales += productPrice * product.qty;
+        totalOrders += 1;
+      }
+    });
+  });
+
+  // Tính số lượng tin nhắn (bình luận) về sản phẩm của seller
+  let totalReviews = 0;
+  sellerProductIds.forEach(productId => {
+    const product = products.find(p => p.id === productId);
+    if (product && product.reviews) {
+      totalReviews += product.reviews.length;
+    }
+  });
+  console.log(`Tổng số tiền mà seller đã bán: $${totalSales.toFixed(2)}`);
+  console.log(`Tổng số lượng đơn hàng mà seller đã bán: ${totalOrders}`);
+  console.log(`Tổng số lượng tin nhắn (bình luận) về sản phẩm của seller: ${totalReviews}`);
   return (
     <>
       <PageTitle>Dashboard</PageTitle>
@@ -34,7 +61,7 @@ function Dashboard() {
           />
         </InfoCard>
 
-        <InfoCard title="Total income" value="$ 6,760.89">
+        <InfoCard title="Total income" value={`$${totalSales.toFixed(2)}`}>
           <RoundIcon
             icon={MoneyIcon}
             iconColorClass="text-green-500 dark:text-green-100"
@@ -43,16 +70,18 @@ function Dashboard() {
           />
         </InfoCard>
 
-        <InfoCard title="New Orders" value="150">
-          <RoundIcon
-            icon={CartIcon}
-            iconColorClass="text-blue-500 dark:text-blue-100"
-            bgColorClass="bg-blue-100 dark:bg-blue-500"
-            className="mr-4"
-          />
-        </InfoCard>
-
-        <InfoCard title="Unread Chats" value="15">
+        <Link to={'/app/orders'}>
+          <InfoCard title="New Orders" value={`${totalOrders}`}>
+            <RoundIcon
+              icon={CartIcon}
+              iconColorClass="text-blue-500 dark:text-blue-100"
+              bgColorClass="bg-blue-100 dark:bg-blue-500"
+              className="mr-4"
+            />
+          </InfoCard>
+        </Link>
+ 
+        <Link to={'/app/chats'}> <InfoCard title="Unread Chats" value={`${totalReviews}`}>
           <RoundIcon
             icon={ChatIcon}
             iconColorClass="text-teal-500 dark:text-teal-100"
@@ -60,6 +89,8 @@ function Dashboard() {
             className="mr-4"
           />
         </InfoCard>
+        </Link>
+
       </div>
 
       <div className="grid gap-6 mb-8 md:grid-cols-2">

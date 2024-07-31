@@ -4,7 +4,8 @@ import { NavLink } from "react-router-dom";
 import { HomeIcon } from "../icons";
 import { Card, CardBody, Label, Select } from "@windmill/react-ui";
 import OrdersTable from "../components/OrdersTable";
-
+import useOrders from "../hooks/useOrders";
+import AdminOrders from "./AdminOrder";
 function Icon({ icon, ...props }) {
   const Icon = icon;
   return <Icon {...props} />;
@@ -12,6 +13,9 @@ function Icon({ icon, ...props }) {
 
 const Orders = () => {
   // pagination setup
+  // const adminId = 'vokhanhlinh952001'
+  // const {orders}= useOrders(adminId);
+  // console.log(orders)
   const [resultsPerPage, setResultPerPage] = useState(10);
   const [filter, setFilter] = useState("all");
 
@@ -87,6 +91,7 @@ const Orders = () => {
 
       {/* Table */}
       <OrdersTable resultsPerPage={resultsPerPage} filter={filter} />
+      {/* <AdminOrders/> */}
     </div>
   );
 };

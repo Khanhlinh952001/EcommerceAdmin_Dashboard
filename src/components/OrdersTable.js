@@ -1,169 +1,137 @@
-import React, { useState, useEffect } from "react";
-import {
-  TableBody,
-  TableContainer,
-  Table,
-  TableHeader,
-  TableCell,
-  TableRow,
-  TableFooter,
-  Badge,
-  Pagination,
-  Card,
-  CardBody,
-  Button,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-} from "@windmill/react-ui";
-import { NavLink } from "react-router-dom";
-import { orders, products } from "../data"; // Make sure this file path is correct
-import { EditIcon, TrashIcon, EyeIcon } from "../icons"; // Ensure these icons are imported correctly
-
-const OrdersTable = ({ filter }) => {
-  const [page, setPage] = useState(1);
-  const [data, setData] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDeleteOrder, setSelectedDeleteOrder] = useState(null);
-  const resultsPerPage = 5; // Display 5 orders per page
-  const totalResults = orders.length;
-
-  useEffect(() => {
-    let filteredOrders = orders;
-
-    // Apply Filters
-    if (filter === "paid") {
-      filteredOrders = orders.filter((order) => order.status === "Paid");
-    } else if (filter === "un-paid") {
-      filteredOrders = orders.filter((order) => order.status === "Un-paid");
-    } else if (filter === "completed") {
-      filteredOrders = orders.filter((order) => order.status === "Completed");
-    }
-
-    setData(filteredOrders.slice((page - 1) * resultsPerPage, page * resultsPerPage));
-  }, [page, filter]);
-
-  const onPageChange = (p) => setPage(p);
-
-  const openModal = (orderId) => {
-    const order = data.find((order) => order.id === orderId);
-    setSelectedDeleteOrder(order);
-    setIsModalOpen(true);
+import React from 'react';
+import useOrders from '../hooks/useOrders';
+import useProducts from '../hooks/useProducts';
+import { MdDelete } from 'react-icons/md';
+import { FaArrowRight } from 'react-icons/fa6';
+import { getProductById } from '../utils/getProductById';
+import { formatNumber } from '../utils/formatNumber';
+import Loading from './Loading';
+import useCustomer from '../hooks/useCustomer';
+const AdminOrders = () => {
+  const adminId = 'vokhanhlinh952001';
+  const { orders, loading, error, updateOrderStatus, deleteOrder } = useOrders(adminId);
+  const { products } = useProducts(adminId);
+  const { customers } = useCustomer();
+  console.log(orders
+  )
+  const handleStatusChange = (userId, orderId, newStatus) => {
+    updateOrderStatus(userId, orderId, newStatus);
   };
 
-  const closeModal = () => setIsModalOpen(false);
+  const handleDelete = (orderId) => {
+    deleteOrder(orderId);
+  };
+
+  const handleClick = (url) => {
+    if (!url) {
+      alert("URL is not available");
+      return;
+    }
+    window.open(url, '_blank');
+  };
+
+  if (loading) {
+    return <div><Loading /></div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
-    <div>
-      <Card>
-        <CardBody>
-          <TableContainer>
-            <Table>
-              <TableHeader>
-                <tr>
-                <TableCell>ID</TableCell>
-                  <TableCell>Order ID</TableCell>
-                  <TableCell>Customer Name</TableCell>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Total Amount</TableCell>
-                  <TableCell>Products</TableCell>
-                  <TableCell>Action</TableCell>
-                </tr>
-              </TableHeader>
-              <TableBody>
-                {data.map((order,index) => (
-                  <TableRow key={order.id}>
-                    <TableCell>
-                      <span className="text-sm">{index+1}</span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm">{order.id}</span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm">{order.shippingAddress}</span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm">{new Date(order.date).toLocaleDateString()}</span>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        type={
-                          order.status === "Un-paid"
-                            ? "danger"
-                            : order.status === "Paid"
-                              ? "success"
-                              : order.status === "Completed"
-                                ? "warning"
-                                : "neutral"
-                        }
-                      >
-                        {order.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm">${order.totalAmount}</span>
-                    </TableCell>
-                    <TableCell>
-                      <ul className="text-sm">
-                        {order.products.map((product) => {
-                          const productDetail = products.find((p) => p.id === product.productId);
-                          const totalPrice = productDetail.price * product.qty;
-                          return (
-                            <li key={product.productId} className="flex">
-                               <img src={productDetail.photo} alt={productDetail.name} className="h-10 w-10 p-1"/> <p className="ml-2 text-md font-bold">(x{product.qty}) - ${totalPrice}</p> 
-                            </li>
-                          );
-                        })}
+    <div className="container mx-auto p-4">
+      {orders.length === 0 ? (
+        <p>No orders found.</p>
+      ) : (
+        <table className="min-w-full bg-white shadow-md rounded my-6">
+          <thead>
+            <tr className="border-b">
+              <th className="py-3 px-6 text-left">Order ID</th>
+              <th className="py-3 px-6 text-left">Customer</th>
+              <th className="py-3 px-6 text-left">Address</th>
+              <th className="py-3 px-6 text-left">Items</th>
+              <th className="py-3 px-6 text-left">Calculate</th>
+              <th className="py-3 px-6 text-left">Total</th>
+              <th className="py-3 px-6 text-left">Status</th>
+              <th className="py-3 px-6 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {orders.map((order) => (
+              <tr key={order.orderId} className={`border-b rounded ${order.status === 'Cancelled' ? 'opacity-50 bg-gray-500' : ''} `}>
+                <td className="py-2 px-2">{order.orderId}</td>
+                <td className="py-2 px-2">{order.billing?.name}</td>
+                <td className="py-2 px-2">{order.billing?.address}</td>
+                <td className="py-2 px-2">
+                  <div className="flex flex-col max-h-32 overflow-y-auto">
+                    <h1 className='text-sm '>{order.cart.length}  </h1>
+                    {order.cart.map((item, idx) => {
+                      const product = products.find(product => product.id == item.id);
 
-                      </ul>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        <NavLink to={`/app/order-detail/${order.id}`}>
-                          <Button icon={EyeIcon} layout="link" aria-label="View" />
-                        </NavLink>
-                        <Button icon={EditIcon} layout="link" aria-label="Edit" />
-                        <Button
-                          icon={TrashIcon}
-                          layout="link"
-                          aria-label="Delete"
-                          onClick={() => openModal(order.id)}
-                        />
+                      if (!product) return null;
+
+                      return (
+                        <div key={idx} className={`flex items-center mb-2 h-16 shadow my-1 px-2 ${order.status === 'Cancelled' ? 'opacity-50 bg-gray-500' : ''}`}>
+                          <img src={product.img[0].url} alt={product.name} className="w-12 h-14 object-cover rounded mr-2" />
+                          <div>
+                            <p className="text-xs truncate overflow-hidden overflow-ellipsis w-40">{product.name}</p>
+                            <p className="text-xs font text-gray-600">{item.quantity} x {product.sales}</p>
+                            <button
+                              onClick={() => handleClick(product.detailUrl)}
+                              className="bg-blue-500 hover:bg-blue-700 text-white text-xs py-1 px-2 rounded"
+                            >
+                              <FaArrowRight />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </td>
+                <td className="py-2 font-semibold p-6">
+
+
+                  <div>
+                    {order.calculate ? (
+                      <div className="flex justify-center items-center m-1 font-medium py-1 px-2 rounded-full text-red-100 bg-red-700 border border-red-700">
+                        <div className="text-xs font-normal leading-none max-w-full flex-initial">{order.calculate}</div>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            <TableFooter>
-              <Pagination
-                totalResults={totalResults}
-                resultsPerPage={resultsPerPage}
-                label="Table navigation"
-                onChange={onPageChange}
-              />
-            </TableFooter>
-          </TableContainer>
-        </CardBody>
-      </Card>
-
-      <Modal isOpen={isModalOpen} onClose={closeModal}>
-        <ModalHeader>Delete Order</ModalHeader>
-        <ModalBody>
-          Are you sure you want to delete order{' '}
-          {selectedDeleteOrder && selectedDeleteOrder.id}?
-        </ModalBody>
-        <ModalFooter>
-          <Button layout="outline" onClick={closeModal}>
-            Cancel
-          </Button>
-          <Button>Delete</Button>
-        </ModalFooter>
-      </Modal>
+                    ) : (
+                      <div className="flex justify-center items-center m-1 font-medium py-1 px-2 rounded-full text-red-100 bg-red-700 border border-red-700">
+                        <div className="text-xs font-normal leading-none max-w-full flex-initial">Outstanding</div>
+                      </div>
+                    )}
+                  </div>
+                </td>
+                <td className="py-2 font-semibold p-6">{formatNumber(order.total)}</td>
+                <td className="py-2 px-6">
+                  <select
+                    value={order.status}
+                    onChange={(e) => handleStatusChange(order.userId, order.orderId, e.target.value)}
+                    className="border rounded px-3 py-1 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Shipped">Shipped</option>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
+                </td>
+                <td className="py-2 px-6">
+                  <button
+                    onClick={() => handleDelete(order.orderId)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <MdDelete size={24} />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 };
 
-export default OrdersTable;
+export default AdminOrders;

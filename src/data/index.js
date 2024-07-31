@@ -1,5 +1,5 @@
 const products = [
-  {
+ {
     id: 1,
     name: "Nồi cơm nắp gài BlueStone 1.8 lít RCB-5520",
     description: "Nồi cơm điện nắp gài BlueStone 1.8 lít RCB-5520 trang bị công nghệ 1D nấu cơm chín nhanh, lòng nồi hợp kim nhôm phủ chống dính bền tốt, điều chỉnh bằng nút gạt dễ sử dụng,... là sản phẩm tiện lợi hỗ trợ chế biến những bữa cơm thơm ngon cho gia đình.",
@@ -11,6 +11,9 @@ const products = [
       { id: 2, rating: 5, comment: "Highly recommended!" },
     ],
     photo: "https://cdn.tgdd.vn/Products/Images/1922/189688/Slider/vi-vn-bluestone-rcb-5520-1.jpg",
+    image_list :[
+     
+    ]
   },
   {
     id: 2,
@@ -286,6 +289,7 @@ const orders = [
       return total + (productPrice * product.qty);
     }, 0);
   });
+
   const seller = {
     id: 1,
     personalInfo: {
@@ -362,4 +366,4 @@ const orders = [
   
  
   export {orders,products,seller,reviews,customers};
-  
+ 

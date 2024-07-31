@@ -42,7 +42,7 @@ const routes = [
   {
     path: "/app/chats",
     icon: "ChatIcon",
-    name: "Chats",
+    name: "Comments ",
   },
   {
     path: "/app/manage-profile",

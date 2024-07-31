@@ -21,7 +21,7 @@ const FormTitle = ({ children }) => {
   );
 };
 
-const AddProduct = () => {
+const CreateProduct = () => {
   return (
     <div>
       <PageTitle>Add New Product</PageTitle>
@@ -117,4 +117,4 @@ const AddProduct = () => {
   );
 };
 
-export default AddProduct;
+export default CreateProduct;

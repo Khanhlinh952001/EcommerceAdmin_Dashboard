@@ -5,14 +5,14 @@ const Dashboard = lazy(() => import("../pages/Dashboard"));
 const Orders = lazy(() => import("../pages/Orders"));
 const ProductsAll = lazy(() => import("../pages/ProductsAll"));
 const SingleProduct = lazy(() => import("../pages/SingleProduct"));
-const AddProduct = lazy(() => import("../pages/AddProduct"));
+const AddProduct = lazy(() => import("../pages/AddProducts"));
 const Customers = lazy(() => import("../pages/Customers"));
 const Chats = lazy(() => import("../pages/Chats"));
 const Profile = lazy(() => import("../pages/Profile"));
 const Settings = lazy(() => import("../pages/Settings"));
 const Page404 = lazy(() => import("../pages/404"));
 const Blank = lazy(() => import("../pages/Blank"));
-const CreateProduct = lazy(() => import("../pages/CreateProducts"));
+const CreateProduct = lazy(() => import("../pages/CreateProduct"));
 const OrderDetail = lazy(() => import("../pages/OrderDetail"));
 const EditProduct = lazy(() => import("../pages/EditProduct"));
 
@@ -86,3 +86,4 @@ const routes = [
 ];
 
 export default routes;
+

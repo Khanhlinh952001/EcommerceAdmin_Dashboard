@@ -31,9 +31,21 @@ import {
 } from "@windmill/react-ui";
 import Icon from "../components/Icon";
 import { genRating } from "../utils/genarateRating";
-import { products, seller, reviews } from "../data";
-import { calculateProductStats } from "../utils/genarateRating";
+import {  seller, reviews } from "../data";
+import { calculateProductStats } from "../utils/genarateRating"
+import { ref, child, get, remove } from 'firebase/database';
+import { database } from "../firebaseConfig";
+import { CardActions } from "@mui/material";
+import PreviewIcon from '@mui/icons-material/Preview';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
+import Tooltip from '@mui/material/Tooltip';
+
+import useProducts from "../hooks/useProducts";
 const ProductsAll = () => {
+  const currentUser = 'vokhanhlinh952001';
+  const { products,setProducts } = useProducts(currentUser);
   const [view, setView] = useState("grid");
   const [page, setPage] = useState(1);
   const [data, setData] = useState([]);
@@ -41,13 +53,9 @@ const ProductsAll = () => {
   const totalResults = products.length;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDeleteProduct, setSelectedDeleteProduct] = useState(null);
-
   useEffect(() => {
-    setData(products.slice((page - 1) * resultsPerPage, page * resultsPerPage));
+    setData(products?.slice((page - 1) * resultsPerPage, page * resultsPerPage));
   }, [page, resultsPerPage]);
-
-  const productStats = calculateProductStats(reviews);
-  console.log(productStats[1])
 
   const onPageChange = (p) => {
     setPage(p);
@@ -63,12 +71,30 @@ const ProductsAll = () => {
     setIsModalOpen(false);
   };
 
-  const handleChangeView = () => {
-    setView(view === "list" ? "grid" : "list");
+ 
+  const handleDelete = async (productId) => {
+    try {
+      const dbRef = ref(database);
+      const productRef = child(dbRef, `Products/${productId}`);
+      
+      // Delete the product from the database
+      await remove(productRef);
+
+      // Remove the deleted product from the local state
+      setProducts((prevProducts) =>
+        prevProducts.filter((product) => product.id !== productId)
+      );
+
+      console.log('Product deleted successfully');
+    } catch (error) {
+      console.error('Error deleting product:', error);
+    }
   };
+
 
   return (
     <div>
+     
       <div className="flex text-gray-800 dark:text-gray-300">
         <div className="flex items-center text-purple-600">
           <Icon className="w-5 h-5" aria-hidden="true" icon={HomeIcon} />
@@ -120,12 +146,7 @@ const ProductsAll = () => {
               </Label>
             </div>
             <div className="">
-              <Button
-                icon={view === "list" ? ListViewIcon : GridViewIcon}
-                className="p-2"
-                aria-label="Edit"
-                onClick={handleChangeView}
-              />
+              
             </div>
           </div>
         </CardBody>
@@ -148,7 +169,7 @@ const ProductsAll = () => {
         </ModalFooter>
       </Modal>
 
-      {view === "list" ? (
+      {/* {view === "list" ? (
         <>
           <TableContainer className="mb-8">
             <Table>
@@ -156,15 +177,14 @@ const ProductsAll = () => {
                 <tr>
                   <TableCell>Name</TableCell>
                   <TableCell>Stock</TableCell>
-                  <TableCell>Rating</TableCell>
                   <TableCell>QTY</TableCell>
                   <TableCell>Price</TableCell>
                   <TableCell>Action</TableCell>
                 </tr>
               </TableHeader>
               <TableBody>
-                {seller.productIds.map((productId) => {
-                  const product = products.find((p) => p.id === productId);
+                {products && products.map((product) => {
+                  // const product = products.find((p) => p.id === productId);
 
                   return (
                     <TableRow key={product.id}>
@@ -172,7 +192,7 @@ const ProductsAll = () => {
                         <div className="flex items-center text-sm">
                           <Avatar
                             className="hidden mr-4 md:block"
-                            src={product.photo}
+                            src={product.img[0].url}
                             alt="Product image"
                           />
                           <div>
@@ -185,17 +205,7 @@ const ProductsAll = () => {
                           {product.qty > 0 ? "In Stock" : "Out of Stock"}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-sm">
-                        {productStats[product.id] ? (
-                          genRating(
-                            parseInt(productStats[product.id].averageRating), // Lấy averageRating từ productStats
-                            productStats[product.id].reviewCount, // Lấy reviewCount từ productStats
-                            4 // Số sao tối đa
-                          )
-                        ) : (
-                          <span>No rating</span>
-                        )}
-                      </TableCell>
+                     
 
                       <TableCell className="text-sm">{product.qty}</TableCell>
                       <TableCell className="text-sm">{product.price}</TableCell>
@@ -239,91 +249,65 @@ const ProductsAll = () => {
           </TableContainer>
         </>
       ) : (
-        <>
+        <> */}
           <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mb-8">
-            {seller.productIds.map((productId) => {
-              const product = products.find((p) => p.id === productId);
-              return (
-                <div className="" key={product.id}>
+            {
+              products && products.map((product) => (
+                <div key={product.id}>
                   <Card>
                     <img
-                      className="object-cover w-full h-32 rounded-t"
-                      src={product.photo}
+                      className="object-cover w-full h-60 rounded-t"
+                     src={product.img[0].url}
                       alt="product"
                     />
                     <CardBody>
-                      <div className="mb-3 flex items-center justify-between">
-                        <p className="font-semibold truncate text-gray-600 dark:text-gray-300">
+                      <div className="mb-3  items-center justify-between">
+                        <p className=" font-medium truncate text-gray-600 dark:text-gray-300">
                           {product.name}
                         </p>
-                        <Badge
-                          type={product.qty > 0 ? "success" : "danger"}
-                          className="whitespace-nowrap"
-                        >
-                          <p className="break-normal">
-                            {product.qty > 0 ? `In Stock` : "Out of Stock"}
-                          </p>
-                        </Badge>
+
+                        <p className="text-sm text-gray-500">{product?.description }</p>
                       </div>
-                      <div className="flex justify-between"><p className="mb-2 text-purple-500 font-bold text-lg">
-                        ${product.price}
-                      </p>
-                        <div>
-                          <p className="text-sm pt-1">
-                            {productStats[product.id] ? (
-                              genRating(
-                                parseInt(productStats[product.id].averageRating), // Lấy averageRating từ productStats
-                                productStats[product.id].reviewCount, // Lấy reviewCount từ productStats
-                                4 // Số sao tối đa
-                              )
-                            ) : (
-                              <span>No rating</span>
-                            )}
-                          </p>
-                        </div>
-                      </div>
+                      <div className="flex">
+                       <p className="text-md text-red-500">{Math.floor(product.price).toLocaleString('en')}</p>
+                        <p className="text-sm text-gray-500 mt-1 ml-2 line-through">{Math.floor(product.price).toLocaleString('en')}</p>
 
-
-                      <p className="mb-8 text-gray-600 dark:text-gray-400">
-                        {product.description}
-                      </p>
-
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Link to={`/app/product/${product.id}`}>
-                            <Button
-                              icon={EyeIcon}
-                              className="mr-3"
-                              aria-label="Preview"
-                              size="small"
-                            />
-                          </Link>
-                        </div>
-                        <div>
-                          <Link to={`/app/edit/${product.id}`}>
-                            <Button
-                              icon={
-                                EditIcon}
-                              className="mr-3"
-                              layout="outline"
-                              aria-label="Edit"
-                              size="small"
-                            />
-                          </Link>
-                          <Button
-                            icon={TrashIcon}
-                            layout="outline"
-                            aria-label="Delete"
-                            onClick={() => openModal(product.id)}
-                            size="small"
-                          />
-                        </div>
                       </div>
                     </CardBody>
+                    <CardActions >
+                      <Link to={`/app/edit/${product?.id}`}>
+                        <Button
+                          icon={
+                            EditIcon}
+                          className="mr-3"
+                          layout="outline"
+                          aria-label="Edit"
+                          size="small"
+                        />
+                      </Link>
+
+
+                      <PreviewIcon color="primary" onClick={()=>{
+                         window.open(product?.detailUrl, '_blank');
+                      }} />
+
+                      <DeleteOutlineIcon color="error" onClick={() => handleDelete(product.id)} />
+
+                      <Tooltip title='Up lazada,tiki,shoppe'>
+                        <CloudUploadIcon color="success" />
+                      </Tooltip>
+
+                      <Tooltip title='View product'> <RemoveRedEyeIcon color="info" />
+                      </Tooltip>
+
+                    </CardActions>
+
                   </Card>
+
                 </div>
-              );
-            })}
+              ))
+            }
+
           </div>
 
           <Pagination
@@ -332,10 +316,11 @@ const ProductsAll = () => {
             label="Table navigation"
             onChange={onPageChange}
           />
-        </>
-      )}
+        {/* </>
+      )} */}
     </div>
   );
 };
 
 export default ProductsAll;
+
